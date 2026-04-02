@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Air Writing - Draw in the air using hand gestures tracked by your webcam and ML">
+  <title>Air Writer — Draw in the Air ✨</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="header">
+      <div class="logo">
+        <span class="logo-icon">✍️</span>
+        <h1>Air Writer</h1>
+      </div>
+      <div class="status-badge" id="statusBadge">
+        <span class="status-dot"></span>
+        <span id="statusText">Initializing...</span>
+      </div>
+    </header>
+
+    <!-- Main Canvas Area -->
+    <main id="canvasArea">
+      <video id="webcam" autoplay playsinline></video>
+      <canvas id="drawCanvas"></canvas>
+      <canvas id="landmarkCanvas"></canvas>
+
+      <!-- Gesture Indicator -->
+      <div id="gestureIndicator" class="gesture-indicator">
+        <span id="gestureIcon">🖐️</span>
+        <span id="gestureLabel">Waiting...</span>
+      </div>
+
+      <!-- Onboarding Overlay -->
+      <div id="onboarding" class="onboarding-overlay">
+        <div class="onboarding-card">
+          <h2>Welcome to Air Writer ✨</h2>
+          <p>Write in the air using your hand — the camera tracks your finger!</p>
+          <div class="gesture-guide">
+            <div class="gesture-item">
+              <span class="gesture-emoji">☝️</span>
+              <div>
+                <strong>Index Finger Up</strong>
+                <p>Draw on screen</p>
+              </div>
+            </div>
+            <div class="gesture-item">
+              <span class="gesture-emoji">✊</span>
+              <div>
+                <strong>Fist / Fingers Down</strong>
+                <p>Stop drawing (pen up)</p>
+              </div>
+            </div>
+            <div class="gesture-item">
+              <span class="gesture-emoji">✌️</span>
+              <div>
+                <strong>Two Fingers Up</strong>
+                <p>Eraser mode</p>
+              </div>
+            </div>
+            <div class="gesture-item">
+              <span class="gesture-emoji">🖐️</span>
+              <div>
+                <strong>Open Palm</strong>
+                <p>Clear entire canvas</p>
+              </div>
+            </div>
+          </div>
+          <button id="startBtn" class="btn-primary">
+            <span>Start Camera</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toolbar -->
+    <aside id="toolbar" class="toolbar">
+      <div class="tool-group">
+        <label class="tool-label">Color</label>
+        <div class="color-picker-wrap">
+          <input type="color" id="colorPicker" value="#00e5ff" class="color-picker">
+          <div class="color-swatches">
+            <button class="swatch active" data-color="#00e5ff" style="--c:#00e5ff" title="Cyan"></button>
+            <button class="swatch" data-color="#ff4081" style="--c:#ff4081" title="Pink"></button>
+            <button class="swatch" data-color="#76ff03" style="--c:#76ff03" title="Green"></button>
+            <button class="swatch" data-color="#ffea00" style="--c:#ffea00" title="Yellow"></button>
+            <button class="swatch" data-color="#e040fb" style="--c:#e040fb" title="Purple"></button>
+            <button class="swatch" data-color="#ffffff" style="--c:#ffffff" title="White"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-group">
+        <label class="tool-label">Thickness <span id="thicknessVal">4</span>px</label>
+        <input type="range" id="thickness" min="1" max="20" value="4" class="slider">
+      </div>
+
+      <div class="tool-group">
+        <label class="tool-label">Smoothing</label>
+        <input type="range" id="smoothing" min="0" max="10" value="5" class="slider">
+      </div>
+
+      <div class="tool-group">
+        <label class="tool-label">Glow Effect</label>
+        <label class="toggle">
+          <input type="checkbox" id="glowToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="tool-divider"></div>
+
+      <div class="tool-group actions">
+        <button id="undoBtn" class="btn-tool" title="Undo last stroke">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h13a4 4 0 0 1 0 8H7"/><path d="M3 10l4-4M3 10l4 4"/></svg>
+          Undo
+        </button>
+        <button id="clearBtn" class="btn-tool btn-danger" title="Clear canvas">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6"/></svg>
+          Clear
+        </button>
+        <button id="saveBtn" class="btn-tool" title="Save as image">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Save
+        </button>
+      </div>
+    </aside>
+
+    <!-- FPS Counter -->
+    <div id="fpsCounter" class="fps-counter">-- FPS</div>
+  </div>
+
+  <!-- MediaPipe CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

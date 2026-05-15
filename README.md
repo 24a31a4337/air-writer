@@ -1,5 +1,5 @@
 # ✍️ Air Writer — Draw in the Air
-
+surplust of 
 A real-time air writing application that lets you draw on screen using hand gestures tracked by your webcam. Powered by **MediaPipe Hands** for ML-based hand landmark detection.
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
